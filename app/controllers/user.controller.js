@@ -4,7 +4,6 @@ const User = require('../models/user.model.js')
 const API = require('../../config/api.keys')
 const rounds = 10
 
-// TODO add email validation add return to all res make all async and await
 exports.register = (req, res) => {
     if (!req.body) return res.status(400).send({
         message: "Missing data"
@@ -90,25 +89,54 @@ exports.liverates = async(req,res) => {
     });
     const email = req.body.email
     if(email == null) return res.status(403).json({error: "Not a valid user"})
-    const user = await User.findOne({email})
-    const subscribedRates = user.liverates
+    try {
+        const user = await User.findOne({email})
+        const subscribedRates = user.liverates
+        if(subscribedRates.length < 1) return res.status(200).json({message: "User is not subscribed to any stocks"})
+        const promises = subscribedRates.map(stock => (`${API.alpha.url}GLOBAL_QUOTE&symbol=${stock.symbol}&apikey=${API.alpha.key}`));
+        Promise.all(
+            promises.map(url => 
+                fetch(url)
+                .then(response => response.json())
+                .catch(err => console.error(err))
+            )
+        ).then(rates => {
+            const liverates = rates.map(rate => {
+                const symbol = rate["Global Quote"]['01. symbol']
+                const price = rate["Global Quote"]['05. price']
+                return {symbol,price}
+            });
+            return res.status(200).json({liverates})
+        });    
+    } catch(err){
+        return res.status(403).send({message: "User does not exist"});
+    }
+}
 
-    if(subscribedRates.length < 1) return res.status(403).json({error: "User is not subscirbed to any stocks"})
-
-    const promises = subscribedRates.map(stock => (`${API.alpha.url}GLOBAL_QUOTE&symbol=${stock.symbol}&apikey=${API.alpha.key}`));
-
-    Promise.all(
-        promises.map(url => 
-            fetch(url)
-            .then(response => response.json())
-            .catch(err => console.error(err))
-        )
-    ).then(rates => {
-        const liverates = rates.map(rate => {
-            const symbol = rate["Global Quote"]['01. symbol']
-            const price = rate["Global Quote"]['05. price']
-            return {symbol,price}
-        });
-        return res.status(200).json({liverates})
-    });    
+exports.getPortfolio = async (req,res) => {
+    if (!req.params) return res.status(400).send({
+        message: "Missing data"
+    });
+    const email = req.body.email
+    if(email == null) return res.status(400).send({message: "Missing data"});
+    try {
+        const user = await User.findOne({email})
+        var shareBalance = 0
+        var shareListings = {}
+        if(!user) return res.status(403).send({error: "This user does not exist"})
+        if(user.shares && user.shares.length > 0) {
+            user.shares.forEach(share => {
+                shareBalance += share.price
+                if(!shareListings[share.symbol]) shareListings[share.symbol] = 1
+                else shareListings[share.symbol] += 1
+            })
+        }
+        return res.status(200).json({
+            balance: user.balance,
+            shares : shareListings,
+            totalValue: shareBalance + user.balance
+        })
+    } catch(err) {
+        return res.status(403).send({error: "This user does not exist"})
+    }
 }

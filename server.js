@@ -15,6 +15,7 @@ app.use(bodyParser.urlencoded({ extended: true }))
 
 app.use(bodyParser.json())
 const userRoutes = require('./app/routes/user.routes.js')(app);
+
 const stockRoutes = require('./app/routes/stock.routes.js')(app);
 
 app.get('/', (req, res) => {
