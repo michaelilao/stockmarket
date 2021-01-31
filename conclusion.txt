@@ -1,1 +1,4 @@
-Sections I am proud of in this project is the create stock call. When a user wants to create a stock and add it to the simulator, the back-end will try to fetch a live price of the stock before taking the user input price. Another section is the liverates and subscribe functionality, this allows the user to subscirbe to any stock even if it is not in the system and get live rates of them.
+Sections I am proud of in this project is the create stock call. When a user wants to create a stock and add it to the 
+simulator, the back-end will try to fetch a live price of the stock before taking the user input price. Another section 
+is the liverates and subscribe functionality, this allows the user to subscirbe to any stock even if it is not in the 
+system and get live rates of them.
