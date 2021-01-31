@@ -1,6 +1,6 @@
 module.exports = {
     alpha:{
         url: 'https://www.alphavantage.co/query?function=',
-        key: ''
+        key: 'G6AUDLI5F98FUYTS'
     }
 }

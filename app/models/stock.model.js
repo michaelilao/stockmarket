@@ -1,10 +1,6 @@
 const mongoose = require('mongoose');
 
 const StockSchema = mongoose.Schema({
-    businessname: {
-        type: String,
-        require: true,
-    },
     symbol: {
         type: String,
         require: true,
